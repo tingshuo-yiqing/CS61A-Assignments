@@ -21,7 +21,8 @@ def roll_dice(num_rolls, dice=six_sided):
     assert type(num_rolls) == int, 'num_rolls must be an integer.'
     assert num_rolls > 0, 'Must roll at least once.'
     # BEGIN PROBLEM 1
-    "*** YOUR CODE HERE ***"
+    ret = [dice() for _ in range(num_rolls)]
+    return 1 if 1 in ret else sum(ret)
     # END PROBLEM 1
 
 
@@ -33,7 +34,8 @@ def boar_brawl(player_score, opponent_score):
 
     """
     # BEGIN PROBLEM 2
-    "*** YOUR CODE HERE ***"
+    score = abs(player_score % 10 - opponent_score // 10 % 10)
+    return max(1, 3 * score)
     # END PROBLEM 2
 
 
@@ -51,7 +53,10 @@ def take_turn(num_rolls, player_score, opponent_score, dice=six_sided):
     assert num_rolls >= 0, 'Cannot roll a negative number of dice in take_turn.'
     assert num_rolls <= 10, 'Cannot roll more than 10 dice.'
     # BEGIN PROBLEM 3
-    "*** YOUR CODE HERE ***"
+    if num_rolls == 0:
+        return boar_brawl(player_score, opponent_score)
+    else:
+        return roll_dice(num_rolls, dice)
     # END PROBLEM 3
 
 
@@ -76,13 +81,21 @@ def is_prime(n):
 def num_factors(n):
     """Return the number of factors of N, including 1 and N itself."""
     # BEGIN PROBLEM 4
-    "*** YOUR CODE HERE ***"
+    cnt = 0
+    for i in range(1, n + 1):
+        if n % i == 0:
+            cnt += 1
+    return cnt
     # END PROBLEM 4
 
 def sus_points(score):
     """Return the new score of a player taking into account the Sus Fuss rule."""
     # BEGIN PROBLEM 4
-    "*** YOUR CODE HERE ***"
+    if num_factors(score) in (3, 4):
+        score += 1
+        while not is_prime(score):
+            score += 1
+    return score
     # END PROBLEM 4
 
 def sus_update(num_rolls, player_score, opponent_score, dice=six_sided):
@@ -90,7 +103,9 @@ def sus_update(num_rolls, player_score, opponent_score, dice=six_sided):
     PLAYER_SCORE and then rolls NUM_ROLLS DICE, *including* Sus Fuss.
     """
     # BEGIN PROBLEM 4
-    "*** YOUR CODE HERE ***"
+    player_score += take_turn(num_rolls, player_score, opponent_score, dice)
+    player_score = sus_points(player_score)
+    return player_score
     # END PROBLEM 4
 
 
@@ -129,7 +144,14 @@ def play(strategy0, strategy1, update,
     """
     who = 0  # Who is about to take a turn, 0 (first) or 1 (second)
     # BEGIN PROBLEM 5
-    "*** YOUR CODE HERE ***"
+    while score0 < goal and score1 < goal:
+        if who:
+            num_rolls1 = strategy1(score1, score0)
+            score1 = update(num_rolls1, score1, score0, dice)
+        else:
+            num_rolls0 = strategy0(score0, score1)
+            score0 = update(num_rolls0, score0, score1, dice)
+        who ^= 1
     # END PROBLEM 5
     return score0, score1
 
@@ -152,16 +174,18 @@ def always_roll(n):
     >>> strategy(99, 99)
     3
     """
-    assert n >= 0 and n <= 10
+    assert 0 <= n <= 10
     # BEGIN PROBLEM 6
-    "*** YOUR CODE HERE ***"
+    def strategy(score0=0, score1=0):
+        return n
+    return strategy
     # END PROBLEM 6
 
 
 def catch_up(score, opponent_score):
     """A player strategy that always rolls 5 dice unless the opponent
     has a higher score, in which case 6 dice are rolled.
-
+    
     >>> catch_up(9, 4)
     5
     >>> strategy(17, 18)
@@ -185,7 +209,13 @@ def is_always_roll(strategy, goal=GOAL):
     False
     """
     # BEGIN PROBLEM 7
-    "*** YOUR CODE HERE ***"
+    #! 判断传入的策略是否在任何分数下都传回相同的dice
+    first = strategy(0, 0)
+    for i in range(goal):
+        for j in range(goal):
+            if strategy(i, j) != first:
+                return False
+    return True
     # END PROBLEM 7
 
 
@@ -201,7 +231,13 @@ def make_averaged(original_function, times_called=1000):
     3.0
     """
     # BEGIN PROBLEM 8
-    "*** YOUR CODE HERE ***"
+    def ret(*args):
+        total = 0
+        for _ in range(times_called):
+            # 调用传入的函数times_called次，并返回它的平均值
+            total += original_function(*args)
+        return total / times_called
+    return ret
     # END PROBLEM 8
 
 
@@ -214,7 +250,7 @@ def max_scoring_num_rolls(dice=six_sided, times_called=1000):
     1
     """
     # BEGIN PROBLEM 9
-    "*** YOUR CODE HERE ***"
+    
     # END PROBLEM 9
 
 
